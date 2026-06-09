@@ -4,23 +4,20 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "devEngines": {
-    "packageManager": {
-      "name": "pnpm",
-      "version": "^11.5.1",
-      "onFail": "download"
-    }
-  },
   "type": "module",
   "dependencies": {
     "mongoose": "^9.6.3",
     "koa": "^3.2.0",
     "@koa/router": "^15.6.0",
     "koa-bodyparser": "^4.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
   }
 }
