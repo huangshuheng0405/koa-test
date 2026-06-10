@@ -19,10 +19,27 @@ router.post('/register', async (ctx) => {
   }
 })
 
-// 查
-router.get('/', async (ctx) => {
+// 查 通过username
+router.get('/getUserInfo', async (ctx) => {
   try {
-    const users = await User.find({}, { password: 0 }) // 查询结果 隐藏密码
+    const { username, age } = ctx.query
+    const query = {}
+
+    if (username) {
+      query.username = username
+    }
+
+    if (age !== undefined) {
+      const ageNumber = Number(age)
+      if (Number.isNaN(ageNumber)) {
+        ctx.status = 400
+        ctx.body = { code: 400, message: 'age 必须是数字' }
+        return
+      }
+      query.age = ageNumber
+    }
+
+    const users = await User.find(query)
     ctx.body = { code: 200, message: '查询成功', data: users }
   } catch (error) {
     ctx.body = { code: 500, message: '查询失败', data: error.message }
@@ -30,13 +47,44 @@ router.get('/', async (ctx) => {
 })
 
 // 改
-router.put('/:id', async (ctx) => {
+router.put('/:username', async (ctx) => {
   try {
-    const { id } = ctx.params
-    const { age } = ctx.request.body
+    const { username } = ctx.params
+    const { age, password } = ctx.request.body
 
-    // 更新数据 new: true 表示返回更新后的数据
-    const result = await User.findByIdAndUpdate(id, { age }, { new: true })
+    const update = {}
+
+    if (age !== undefined) {
+      const ageNumber = Number(age)
+      if (Number.isNaN(ageNumber)) {
+        ctx.status = 400
+        ctx.body = { code: 400, message: 'age 必须是数字' }
+        return
+      }
+      update.age = ageNumber
+    }
+
+    if (password !== undefined) {
+      update.password = password
+    }
+
+    if (Object.keys(update).length === 0) {
+      ctx.status = 400
+      ctx.body = { code: 400, message: '至少需要传入 age 或 password' }
+      return
+    }
+
+    const result = await User.findOneAndUpdate(
+      { username },
+      { $set: update },
+      { new: true }
+    )
+
+    if (!result) {
+      ctx.status = 404
+      ctx.body = { code: 404, message: '用户不存在' }
+      return
+    }
 
     ctx.body = { code: 200, message: '更新成功', data: result }
   } catch (error) {
@@ -44,11 +92,11 @@ router.put('/:id', async (ctx) => {
   }
 })
 
-// 删
-router.delete('/:id', async (ctx) => {
+// 删 通过 username 删除
+router.delete('/:username', async (ctx) => {
   try {
-    const { id } = ctx.params
-    const result = await User.findByIdAndDelete(id)
+    const { username } = ctx.params
+    const result = await User.findOneAndDelete({ username })
     ctx.body = { code: 200, message: '删除成功', data: result }
   } catch (error) {
     ctx.body = { code: 500, message: '删除失败', data: error.message }
