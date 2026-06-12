@@ -17,7 +17,7 @@ app.use(cors()) // 用于处理跨域问题
 app.use(userRouter.routes()).use(userRouter.allowedMethods())
 
 // 4. 启动服务
-app.listen(80, 'localhost', () => {
+app.listen(80, '0.0.0.0', () => {
   console.log('http://localhost:80')
 })
 
